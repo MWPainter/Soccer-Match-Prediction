@@ -6,7 +6,7 @@ Data is taken from the "European Soccer Database" dataset found on Kaggle. It ca
 https://www.kaggle.com/hugomathien/soccer
 ```
 
-Once downloaded the files should be unzipped and placed in:
+Once downloaded the SQLite database should be unzipped and placed at the relative path:
 ```
-
+/database.sqlite
 ```

@@ -1,0 +1,7 @@
+# The database files
+soccer.zip
+database.sqlite
+
+
+# Google drive meta data files
+.fuse*
