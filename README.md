@@ -1,4 +1,4 @@
-# CS229: Soccer Match Prediction
+# CS229: Soccer Match Prediction 
 ## Beating the Odds: Learning to Bet on Soccer Matches Using Historical Data
 
 Data is taken from the "European Soccer Database" dataset found on Kaggle. It can be downloaded from here:
