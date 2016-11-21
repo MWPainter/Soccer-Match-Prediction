@@ -69,7 +69,7 @@ class attributeVectorIterator(object):
         if len(years) > 1:
             queryString = 'SELECT * FROM Match WHERE league_id = {0} AND season IN {1} ORDER BY date'.format(self.leagueID, str(tuple(years)))  
         else:
-            queryString = 'SELECT * FROM Match WHERE league_id = {0} AND season = "{0}" ORDER BY date'.format(self.leagueId, str(years[0]))
+            queryString = 'SELECT * FROM Match WHERE league_id = {0} AND season = "{0}" ORDER BY date'.format(self.leagueID, str(years[0]))
         self.dbMatchCursor = self.dbConn.cursor()
         self.dbMatchCursor.execute(queryString)
 
@@ -82,7 +82,6 @@ class attributeVectorIterator(object):
 
     '''
     Get the next (attribute item, label) pair from the iterable (us)
-
     '''
     def next(self):
         # Get the next match row
@@ -105,13 +104,17 @@ class attributeVectorIterator(object):
         tempCursor = self.dbConn.cursor()
         tempCursor.execute('SELECT team_long_name FROM Team WHERE team_api_id = {0}'.format(homeTeamApiID))
         homeTeamName = tempCursor.fetchone()[0]
+        tempCursor.execute('SELECT * FROM Team_Attributes WHERE team_api_id = {0} AND date < "{1}" ORDER BY date DESC'.format(homeTeamApiID, matchRow['date']))
+        homeTeamAttributesRow = tempCursor.fetchone()
         tempCursor.execute('SELECT team_long_name FROM Team WHERE team_api_id = {0}'.format(awayTeamApiID))
         awayTeamName = tempCursor.fetchone()[0]
+        tempCursor.execute('SELECT * FROM Team_Attributes WHERE team_api_id = {0} AND date < "{1}" ORDER BY date DESC'.format(awayTeamApiID, matchRow['date']))
+        awayTeamAttributesRow = tempCursor.fetchone()
 
         # Create attribute vector, make it a defaultdict(float) so values default to 0.0 in a sparse vector
         # Match info will make subsequent calls to add player info and info from meta data
         attrVector = {}
-        self.addMatchInfo(attrVector, matchRow, homeTeamName, awayTeamName, date) 
+        self.addMatchInfo(attrVector, matchRow, homeTeamName, homeTeamAttributesRow, awayTeamName, awayTeamAttributesRow, date) 
 
         # Also get the match result, i.e. the label
         homeScore = matchRow['home_team_goal']
@@ -149,7 +152,7 @@ class attributeVectorIterator(object):
     Add all information from a row in Match table and the current meta data
     This also updates the meta data
     '''
-    def addMatchInfo(self, attrVector, matchRow, homeTeamName, awayTeamName, date):
+    def addMatchInfo(self, attrVector, matchRow, homeTeamName, homeTeamAttributesRow, awayTeamName, awayTeamAttributesRow, date):
         # Add the team's names as attributes
         attrVector['homeTeamName'] = homeTeamName
         attrVector['awayTeamName'] = awayTeamName
@@ -157,8 +160,6 @@ class attributeVectorIterator(object):
         # Compute the home and away formations 
         self.addFormation(attrVector, matchRow, 'home')
         self.addFormation(attrVector, matchRow, 'away')
-
-        # Copy over some betting probabilities
 
         # Add in a value for their current standing in the league
         # Their game history to model form
@@ -169,12 +170,26 @@ class attributeVectorIterator(object):
         attrVector['awayGameHistoryScore'] = self.computeGameHistoryScore(awayTeamName)
         attrVector['homeTimeSinceLastMatch'] = self.timeSinceLastMatch(homeTeamName, date)
         attrVector['awayTimeSinceLastMatch'] = self.timeSinceLastMatch(awayTeamName, date)
-
+        
+        # Add in information about the two teams
+        self.addTeamAttributes(attrVector, 'home', homeTeamAttributesRow)
+        self.addTeamAttributes(attrVector, 'away', awayTeamAttributesRow)
+        '''
         # Add in information about each player
-        # TODO
+        tempCursor = self.dbConn.cursor()
+        for homeOrAway in ['home', 'away']:
+            for i in range(12):
+                playerStr = homeOrAway + '_player_' + str(i)
+                prefix = playerStr + '_'
+                tempCursor.execute('SELECT height, weight FROM Player WHERE player_api_id = {0}'.format(matchRow[playerStr]))
+                playerRow = tempCursor.fetchone()
+                # TODO: Add player stuff
+                tempCursor.execute('SELECT * FROM Player_Attributes WHERE player_api_id = {0} AND date < {1} ORDER BY date DESC'.format(matchRow[playerStr] , matchRow['date']))
+                playerAttributesRow = tempCursor.fetchone()
+                self.addPlayerAttributes(attrVector, prefix, playerAttributesRow)
+        '''
 
 
-    
     '''
     From a match row, computes the formations (using the Y coordinates of player positions) and add's them as an attribute
     Note that we start at player 2, and loop from 3 to 11 because we ignore the goalkeeper
@@ -202,10 +217,13 @@ class attributeVectorIterator(object):
         
         # Add the attribute!
         attrString = homeOrAway + 'Formation'
-        valString = "1"
+        valString = ''
         for rowCount in formation:
-            valString += '-' + str(rowCount)
+            if valString == '': valString += str(rowCount)
+            else: valString += '-' + str(rowCount)
         attrVector[attrString] = valString
+
+
 
     '''
     Computing the league position for the given team at the current time
@@ -217,12 +235,16 @@ class attributeVectorIterator(object):
         pointTableCpy = copy.copy(self.pointTable)
         return 1 + sum([1 for otherTeamName in self.pointTable if pointTableCpy[otherTeamName] > pointTableCpy[teamName]])
 
+
+
     '''
     Compute a value from the game history representing how we'll they've done
     For now, with win=1, draw=0, loss=-1 we just add these together
     '''
     def computeGameHistoryScore(self, teamName):
         return sum(self.gameHistory[teamName])
+
+
 
     '''
     Compute the time since the last match a team has played
@@ -234,6 +256,46 @@ class attributeVectorIterator(object):
         if lastDate == None: return 0
         deltaTime = date - lastDate
         return deltaTime.total_seconds()
+
+
+
+    '''
+    Add attributes for the home/away team from their row in the database
+    '''
+    def addTeamAttributes(self, attrVector, homeOrAway, teamAttributesRow):
+        prefix = homeOrAway + '_team_'
+        columns = ['buildUpPlaySpeed', 'buildUpPlayDribbling', 'buildUpPlayDribblingClass', 'buildUpPlayPassing', 
+                   'buildUpPlayPassingClass', 'buildUpPlayPositioningClass', 'chanceCreationPassing', 
+                   'chanceCreationPassingClass', 'chanceCreationCrossing', 'chanceCreationCrossingClass', 
+                   'chanceCreationShooting', 'chanceCreationShootingClass', 'chanceCreationPositioningClass', 
+                   'defencePressure', 'defencePressureClass', 'defenceAggression', 'defenceAggressionClass', 
+                   'defenceTeamWidth', 'defenceTeamWidthClass', 'defenceDefenderLineClass']
+        self.copyRowValuesToAttrVector(attrVector, prefix, columns, teamAttributesRow)
+
+
+
+    '''
+    Add attributes for a given player
+    '''
+    def addPlayerAttributes(self, prefix, playerAttributesRow):
+        columns = ['overall_rating', 'potential, preferred_foot', 'attacking_work_rate', 'defensive_work_rate', 
+                   'crossing', 'finishing', 'heading_accuracy', 'short_passing', 'volleys', 'dribbling', 'curve', 
+                   'free_kick_accuracy', 'long_passing', 'ball_control', 'acceleration', 'sprint_speed', 'agility', 
+                   'reactions', 'balance', 'shot_power', 'jumping', 'stamina', 'strength', 'long_shots', 'aggression', 
+                   'interceptions', 'positioning', 'vision', 'penalties', 'marking', 'standing_tackle', 'sliding_tackle', 
+                   'gk_diving', 'gk_handling', 'gk_kicking', 'gk_positioning', 'gk_reflexes']
+        self.copyRowValuesToAttrVector(attrVector, prefix, columns, playerAttributesRow)
+
+
+
+    '''
+    General method to copy all values from a row to the attribute vector, with a given prefix for the attribute dict key
+    '''
+    def copyRowValuesToAttrVector(self, attrVector, prefix, columns, row):
+        for col in columns:
+            attrVector[prefix+col] = row[col]
+
+
 
     ''' 
     Update meta data
@@ -255,6 +317,8 @@ class attributeVectorIterator(object):
             self.pointTable[awayTeam] += 1
             self.pushResultOnHistory(homeTeam, 0)
             self.pushResultOnHistory(awayTeam, 0)
+
+
 
     ''' 
     Updating the history of a team after a game has been played
