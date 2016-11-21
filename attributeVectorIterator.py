@@ -94,7 +94,7 @@ class attributeVectorIterator(object):
 
         # Check if we are into a new season
         if matchRow['season'] != self.currentSeason:
-            currentSeason = matchRow['season']
+            self.currentSeason = matchRow['season']
             self.newSeasonSetup()
         
         # Get team names and dates
