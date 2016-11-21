@@ -69,7 +69,7 @@ class attributeVectorIterator(object):
         if len(years) > 1:
             queryString = 'SELECT * FROM Match WHERE league_id = {0} AND season IN {1} ORDER BY date'.format(self.leagueID, str(tuple(years)))  
         else:
-            queryString = 'SELECT * FROM Match WHERE league_id = {0} AND season = "{0}" ORDER BY date'.format(self.leagueID, str(years[0]))
+            queryString = 'SELECT * FROM Match WHERE league_id = {0} AND season = "{1}" ORDER BY date'.format(self.leagueID, str(years[0]))
         self.dbMatchCursor = self.dbConn.cursor()
         self.dbMatchCursor.execute(queryString)
 
