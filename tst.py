@@ -7,17 +7,18 @@ for row in c.execute('SELECT home_team_api_id, home_player_X1, home_player_Y1, h
   print row
 '''
 
-
+'''
 import attributeVectorIterator as a
 vi = a.attributeVectorIterator(years=['2015/2016', '2014/2015'])
 for i in range(38):
     print vi.next()
     print "\n"
-
-
-
 '''
+
+
 import attributeVectorIterator as a
-for (av, result) in a.attributeVectorIterator():
-    print av
-'''
+for (av, result) in a.attributeVectorIterator(years=['2010/2011', '2013/2014']):
+    #print av
+    i =0 
+    i=1
+
