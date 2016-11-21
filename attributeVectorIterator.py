@@ -176,21 +176,22 @@ class attributeVectorIterator(object):
         self.addTeamAttributes(attrVector, 'away', awayTeamAttributesRow)
         
          
+        # TODO: Uncomment this when we're feeling crazy :D
+        '''
         # Add in information about each player
         tempCursor = self.dbConn.cursor()
         for homeOrAway in ['home', 'away']:
             for i in range(1,12):
                 playerStr = homeOrAway + '_player_' + str(i)
                 prefix = playerStr + '_'
+                if matchRow[playerStr] == None: continue # TODO: Solve this <--- problem
                 tempCursor.execute('SELECT * FROM Player WHERE player_api_id = {0}'.format(matchRow[playerStr]))
                 playerRow = tempCursor.fetchone()
                 self.addPlayerValues(attrVector, prefix, playerRow, date)
-                # TODO: Uncomment this when we're feeling crazy :D
-                '''
                 tempCursor.execute('SELECT * FROM Player_Attributes WHERE player_api_id = {0} AND date < "{1}" ORDER BY date DESC'.format(matchRow[playerStr] , matchRow['date']))
                 playerAttributesRow = tempCursor.fetchone()
                 self.addPlayerAttributes(attrVector, prefix, playerAttributesRow)
-                '''
+        '''
 
 
 
