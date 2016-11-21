@@ -174,20 +174,24 @@ class attributeVectorIterator(object):
         # Add in information about the two teams
         self.addTeamAttributes(attrVector, 'home', homeTeamAttributesRow)
         self.addTeamAttributes(attrVector, 'away', awayTeamAttributesRow)
-        '''
+        
+         
         # Add in information about each player
         tempCursor = self.dbConn.cursor()
         for homeOrAway in ['home', 'away']:
-            for i in range(12):
+            for i in range(1,12):
                 playerStr = homeOrAway + '_player_' + str(i)
                 prefix = playerStr + '_'
-                tempCursor.execute('SELECT height, weight FROM Player WHERE player_api_id = {0}'.format(matchRow[playerStr]))
+                tempCursor.execute('SELECT * FROM Player WHERE player_api_id = {0}'.format(matchRow[playerStr]))
                 playerRow = tempCursor.fetchone()
-                # TODO: Add player stuff
-                tempCursor.execute('SELECT * FROM Player_Attributes WHERE player_api_id = {0} AND date < {1} ORDER BY date DESC'.format(matchRow[playerStr] , matchRow['date']))
+                self.addPlayerValues(attrVector, prefix, playerRow, date)
+                # TODO: Uncomment this when we're feeling crazy :D
+                '''
+                tempCursor.execute('SELECT * FROM Player_Attributes WHERE player_api_id = {0} AND date < "{1}" ORDER BY date DESC'.format(matchRow[playerStr] , matchRow['date']))
                 playerAttributesRow = tempCursor.fetchone()
                 self.addPlayerAttributes(attrVector, prefix, playerAttributesRow)
-        '''
+                '''
+
 
 
     '''
@@ -275,9 +279,22 @@ class attributeVectorIterator(object):
 
 
     '''
+    Add values for a given player. These are things that don't change, like height, weight, date of birth
+    We pass in the date of the match to compute the age
+    '''
+    def addPlayerValues(self, attrVector, prefix, playerRow, date):
+        attrVector[prefix+'height'] = playerRow['height']
+        attrVector[prefix+'weight'] = playerRow['weight']
+        birthdate = datetime.strptime(playerRow['birthday'], self.sqlDateFormat)
+        age = date - birthdate
+        attrVector[prefix+'dob'] = age.total_seconds()
+
+
+
+    '''
     Add attributes for a given player
     '''
-    def addPlayerAttributes(self, prefix, playerAttributesRow):
+    def addPlayerAttributes(self, attrVector, prefix, playerAttributesRow):
         columns = ['overall_rating', 'potential, preferred_foot', 'attacking_work_rate', 'defensive_work_rate', 
                    'crossing', 'finishing', 'heading_accuracy', 'short_passing', 'volleys', 'dribbling', 'curve', 
                    'free_kick_accuracy', 'long_passing', 'ball_control', 'acceleration', 'sprint_speed', 'agility', 
