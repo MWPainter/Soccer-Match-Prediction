@@ -65,7 +65,11 @@ class attributeVectorIterator(object):
         # Setup the connection to use
         # Set connection to use sqlite3.Row as a row factory
         # sqlite3.Row is an object that can be indexed by column name, indexed by a number etc. 
-        queryString = 'SELECT * FROM Match WHERE league_id = {0} AND season IN {1} ORDER BY season'.format(self.leagueID, str(tuple(years)))
+        queryString = ''
+        if len(years) > 1:
+            queryString = 'SELECT * FROM Match WHERE league_id = {0} AND season IN {1} ORDER BY date'.format(self.leagueID, str(tuple(years)))  
+        else:
+            queryString = 'SELECT * FROM Match WHERE league_id = {0} AND season = "{0}" ORDER BY date'.format(self.leagueId, str(years[0]))
         self.dbMatchCursor = self.dbConn.cursor()
         self.dbMatchCursor.execute(queryString)
 
