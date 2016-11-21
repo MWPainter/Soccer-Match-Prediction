@@ -110,7 +110,7 @@ class attributeVectorIterator(object):
 
         # Create attribute vector, make it a defaultdict(float) so values default to 0.0 in a sparse vector
         # Match info will make subsequent calls to add player info and info from meta data
-        attrVector = defaultdict(float)
+        attrVector = {}
         self.addMatchInfo(attrVector, matchRow, homeTeamName, awayTeamName, date) 
 
         # Also get the match result, i.e. the label
