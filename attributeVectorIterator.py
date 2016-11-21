@@ -151,8 +151,8 @@ class attributeVectorIterator(object):
     '''
     def addMatchInfo(self, attrVector, matchRow, homeTeamName, awayTeamName, date):
         # Add the team's names as attributes
-        attrVector[homeTeamName] = 1
-        attrVector[awayTeamName] = 1
+        attrVector['homeTeamName'] = homeTeamName
+        attrVector['awayTeamName'] = awayTeamName
 
         # Compute the home and away formations 
         self.addFormation(attrVector, matchRow, 'home')
@@ -202,9 +202,10 @@ class attributeVectorIterator(object):
         
         # Add the attribute!
         attrString = homeOrAway + 'Formation'
+        valString = "1"
         for rowCount in formation:
-            attrString += '-' + str(rowCount)
-        attrVector[attrString] = 1
+            valString += '-' + str(rowCount)
+        attrVector[attrString] = valString
 
     '''
     Computing the league position for the given team at the current time
