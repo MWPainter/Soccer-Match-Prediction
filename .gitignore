@@ -5,3 +5,6 @@ database.sqlite
 
 # Google drive meta data files
 .fuse*
+
+# Python byte code
+*.pyc
