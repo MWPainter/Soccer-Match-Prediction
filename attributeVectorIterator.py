@@ -293,6 +293,7 @@ class attributeVectorIterator(object):
     '''
     def copyRowValuesToAttrVector(self, attrVector, prefix, columns, row):
         for col in columns:
+            print col
             attrVector[prefix+col] = row[col]
 
 
