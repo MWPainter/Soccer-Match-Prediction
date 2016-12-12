@@ -224,11 +224,11 @@ class attributeVectorIterator(object):
         
         # Add the attribute!
         attrString = homeOrAway + 'Formation'
-        valString = ''
+        formationString = ''
         for rowCount in formation:
-            if valString == '': valString += str(rowCount)
-            else: valString += '-' + str(rowCount)
-        attrVector[attrString] = valString
+            if formationString == '': formationString += str(rowCount)
+            else: formationString += '-' + str(rowCount)
+        attrVector[attrString+'-'+formationString] = 1
 
 
 
@@ -310,11 +310,15 @@ class attributeVectorIterator(object):
 
     '''
     General method to copy all values from a row to the attribute vector, with a given prefix for the attribute dict key
+    Taking care to perform one hot encoding on non numeric values, and also taking care to ignore None values
     '''
     def copyRowValuesToAttrVector(self, attrVector, prefix, columns, row):
         for col in columns:
             if col in row.keys():
-                attrVector[prefix+col] = row[col]
+                if isinstance(row[col], (int, float)):
+                    attrVector[prefix+"-"+col] = row[col]
+                elif isinstance(row[col], (str, unicode)):
+                    attrVector[prefix+"-"+col+"-"+row[col]] = 1
 
 
 
