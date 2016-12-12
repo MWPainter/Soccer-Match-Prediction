@@ -1,7 +1,7 @@
 from sklearn import linear_model
 from sklearn import svm
 from sklearn.naive_bayes import MultinomialNB
-from sklearn.neural_network import MLPClassifier
+#from sklearn.neural_network import MLPClassifier
 from collections import defaultdict
 import attributeVectorIterator as a
 
@@ -175,7 +175,7 @@ def NB(trainX, trainY, testX, testY, smoothing = 1):
     error = sum([1.0 * (prediction[i] != testY[i]) for i in range(len(prediction))]) / len(prediction)
     print "Naive Bayes error with smoothing =", smoothing, "is equal to:", error
     return error
-
+'''
 def MLP(trainX, trainY, testX, testY, layerSize, alph = 1e-5):
     clf = MLPClassifier(solver = 'lbfgs', alpha = alph, hidden_layer_sizes = layerSize, random_state = 1)
     clf.fit(trainX, trainY)
@@ -183,3 +183,11 @@ def MLP(trainX, trainY, testX, testY, layerSize, alph = 1e-5):
     error = sum([1.0 * (prediction[i] != testY[i]) for i in range(len(prediction))]) / len(prediction)
     print "Multi-layer perceptron error with layerSize =", layerSize, "is equal to:", error
     return error
+
+
+trainYears = [ '2011/2012', '2012/2013', '2013/2014']
+testYears = ['2014/2015']
+[trainX, trainY, order] = util.createTrainData(trainYears)
+[testX, testY] = util.createTestData(testYears, order)
+MLP(trainX, trainY, testX, testY, (5, 5))
+'''
