@@ -312,8 +312,8 @@ def NB(trainX, trainY, testX, testY, smoothing = 1):
         if av['away_team_defenceDefenderLineClass'] not in defenceDefenderLineClassIndex:
             defenceDefenderLineClassIndex[av['away_team_defenceDefenderLineClass']] = indexdefenceDefenderLineClass
             indexdefenceDefenderLineClass += 1
-    '''
-    '''
+'''
+'''
     print indexchanceCreationPassingClass
     print indexdefenceDefenderLineClass 
     print indexbuildUpPlayDribblingClass 
@@ -329,8 +329,8 @@ def NB(trainX, trainY, testX, testY, smoothing = 1):
     print indexdefenceDefenderLineClass
     print indexFormation 
     print 'here', indexName
-    '''
-    '''
+'''
+'''
     for (av, result) in a.attributeVectorIterator(years):
         newX = []
         newX.append(av['homeGameHistoryScore'])
