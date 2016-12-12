@@ -3,8 +3,9 @@ import util
 import attributeVectorIterator as a
 
 trainYears = [ '2011/2012', '2012/2013', '2013/2014']
-testYears = []
+testYears = ['2014/2015']
 dataExists = False
+'''
 if not dataExists:
     util.createData(trainYears, writeToFile = True, FileName = 'Train')
     #util.createData(testYears, writeToFile = True, FileName = 'Test')
@@ -22,6 +23,9 @@ for i in range(760):
     trainX.append(X[i])
     trainY.append(Y[i])
 #print "testY:", testY
+'''
+[trainX, trainY, order] = util.createTrainData(trainYears)
+[testX, testY] = util.createTestData(testYears, order)
 winBoundary = 0.5
 lossBoundary = -0.5
 util.linearClassification(trainX, trainY, testX, testY, winBoundary, lossBoundary)
