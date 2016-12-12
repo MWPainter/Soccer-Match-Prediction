@@ -18,4 +18,6 @@ for i in range(38):
 
 import attributeVectorIterator as a
 for (av, result) in a.attributeVectorIterator(years=['2010/2011']):
-    print av
+    for key in av:
+        print key
+        print "--->" + str(av[key])

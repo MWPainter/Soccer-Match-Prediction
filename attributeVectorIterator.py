@@ -3,6 +3,11 @@ import sqlite3
 from datetime import datetime, timedelta
 import copy
 
+
+"""
+N.B. Class mixes class and instance variables and treats them all as instance variables.
+     Usage should restrict to only having one of these iterators at a time.
+"""
 class attributeVectorIterator(object):
 
     '''
@@ -153,9 +158,9 @@ class attributeVectorIterator(object):
     This also updates the meta data
     '''
     def addMatchInfo(self, attrVector, matchRow, homeTeamName, homeTeamAttributesRow, awayTeamName, awayTeamAttributesRow, date):
-        # Add the team's names as attributes
-        attrVector['homeTeamName'] = homeTeamName
-        attrVector['awayTeamName'] = awayTeamName
+        # Add the team's names as attributes, one hot encoding
+        attrVector['homeTeamName-'+homeTeamName] = 1
+        attrVector['awayTeamName-'+awayTeamName] = 1
 
         # Compute the home and away formations 
         self.addFormation(attrVector, matchRow, 'home')
@@ -175,9 +180,6 @@ class attributeVectorIterator(object):
         self.addTeamAttributes(attrVector, 'home', homeTeamAttributesRow)
         self.addTeamAttributes(attrVector, 'away', awayTeamAttributesRow)
         
-         
-        # TODO: Uncomment this when we're feeling crazy :D
-        '''
         # Add in information about each player
         tempCursor = self.dbConn.cursor()
         for homeOrAway in ['home', 'away']:
@@ -191,7 +193,7 @@ class attributeVectorIterator(object):
                 tempCursor.execute('SELECT * FROM Player_Attributes WHERE player_api_id = {0} AND date < "{1}" ORDER BY date DESC'.format(matchRow[playerStr] , matchRow['date']))
                 playerAttributesRow = tempCursor.fetchone()
                 self.addPlayerAttributes(attrVector, prefix, playerAttributesRow)
-        '''
+        
 
 
 
@@ -222,11 +224,11 @@ class attributeVectorIterator(object):
         
         # Add the attribute!
         attrString = homeOrAway + 'Formation'
-        valString = ''
+        formationString = ''
         for rowCount in formation:
-            if valString == '': valString += str(rowCount)
-            else: valString += '-' + str(rowCount)
-        attrVector[attrString] = valString
+            if formationString == '': formationString += str(rowCount)
+            else: formationString += '-' + str(rowCount)
+        attrVector[attrString+'-'+formationString] = 1
 
 
 
@@ -308,11 +310,15 @@ class attributeVectorIterator(object):
 
     '''
     General method to copy all values from a row to the attribute vector, with a given prefix for the attribute dict key
+    Taking care to perform one hot encoding on non numeric values, and also taking care to ignore None values
     '''
     def copyRowValuesToAttrVector(self, attrVector, prefix, columns, row):
         for col in columns:
             if col in row.keys():
-                attrVector[prefix+col] = row[col]
+                if isinstance(row[col], (int, float)):
+                    attrVector[prefix+"-"+col] = row[col]
+                elif isinstance(row[col], (str, unicode)):
+                    attrVector[prefix+"-"+col+"-"+row[col]] = 1
 
 
 
