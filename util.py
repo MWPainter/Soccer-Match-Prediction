@@ -119,6 +119,7 @@ def linearClassification(trainX, trainY, testX, testY, winBoundary, lossBoundary
     finalLinear = [1.0 * (x >= winBoundary) + 0 * (x < winBoundary and x >= lossBoundary) + (-1) * (x < lossBoundary) for x in prediction]
     error = sum([1.0 * (finalLinear[i] != testY[i]) for i in range(len(finalLinear))]) / len(finalLinear)
     print "Linear classification with boundaries", lossBoundary, winBoundary, "is equal to:", error
+    return error
 
 def layeredSVM(trainX, trainY, testX, testY):
     #print testY
@@ -148,6 +149,7 @@ def layeredSVM(trainX, trainY, testX, testY):
                 prediction.append(0)
     error = sum([1.0 * (prediction[i] != testY[i]) for i in range(len(prediction))]) / len(prediction)
     print "Layered SVM error: ", error
+    return error
 
 def SVC(trainX, trainY, testX, testY):
     clf = svm.SVC(decision_function_shape='ovo')
@@ -155,6 +157,7 @@ def SVC(trainX, trainY, testX, testY):
     prediction = clf.predict(testX)
     error = sum([1.0 * (prediction[i] != testY[i]) for i in range(len(prediction))]) / len(prediction)
     print "Multiclass SVM error (SVC):", error
+    return error
 
 def linearSVC(trainX, trainY, testX, testY):
     clf = svm.LinearSVC()
@@ -162,6 +165,7 @@ def linearSVC(trainX, trainY, testX, testY):
     prediction = clf.predict(testX)
     error = sum([1.0 * (prediction[i] != testY[i]) for i in range(len(prediction))]) / len(prediction)
     print "linear SVC error (SVC):", error
+    return error
 
 def NB(trainX, trainY, testX, testY, smoothing = 1):
     clf = MultinomialNB(alpha = smoothing)
@@ -169,7 +173,7 @@ def NB(trainX, trainY, testX, testY, smoothing = 1):
     prediction = clf.predict(testX)
     error = sum([1.0 * (prediction[i] != testY[i]) for i in range(len(prediction))]) / len(prediction)
     print "Naive Bayes error with smoothing =", smoothing, "is equal to:", error
-
+    return error
 
 
 
