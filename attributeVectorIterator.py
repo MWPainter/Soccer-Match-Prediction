@@ -184,6 +184,7 @@ class attributeVectorIterator(object):
         tempCursor = self.dbConn.cursor()
         for homeOrAway in ['home', 'away']:
             for i in range(1,12):
+                print homeOrAway + str(i)
                 playerStr = homeOrAway + '_player_' + str(i)
                 prefix = playerStr + '_'
                 if matchRow[playerStr] == None: continue # TODO: Solve this <--- problem

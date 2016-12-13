@@ -45,7 +45,7 @@ for (av, result) in a.attributeVectorIterator(trainYears):
 
 
 kValidationRatio = 0.3
-def forwardSelection(origTrainX, origTrainY, testX, testY, order, trainingAlgorithm):
+def forwardSelection(origTrainX, origTrainY, testX, testY, order, trainingAlgorithm, numIter = 0, startingFeatures = [], featuresLeft = None):
     """
     Performs forward selection 
 
@@ -57,10 +57,14 @@ def forwardSelection(origTrainX, origTrainY, testX, testY, order, trainingAlgori
     :param trainingAlgorithm: the training algorithm we're using, takes training and test sets, returns test error
     """
     (trainX, trainY, valX, valY) = splitData(origTrainX, origTrainY, kValidationRatio)
-    featuresSelected = []
-    remainingFeatures = order.keys()
-    totalNumFeatures = len(trainX[0])
-    for i in range(totalNumFeatures):
+    featuresSelected = startingFeatures
+    validationErrors = []
+    if featuresLeft == None:
+        remainingFeatures = order.keys()
+    else: 
+        remainingFeatures = featuresLeft
+    if numIter == 0: numIter = len(trainX[0])
+    for i in range(numIter):
         bestFeature = None
         bestFeatureError = float('inf')
         for feature in remainingFeatures:
@@ -71,7 +75,9 @@ def forwardSelection(origTrainX, origTrainY, testX, testY, order, trainingAlgori
             if error < bestFeatureError:
                 bestFeature = feature
                 bestFeatureError = error
+                valiationdErrors.append(error)
         featuresSelected = featuresSelected + [bestFeature]
+        remainingFeatures.remove(bestFeature)
         print str(i) + "th feature selected: " + bestFeature
         print "----> error:" + bestFeatureError
 
@@ -119,12 +125,15 @@ def selectFeatures(xs, features, order):
 
 
 
-(forwardSelectedFeatures, errors) = forwardSelection(trainX, trainY, testX, testY, order, util.linearSVC)
+(forwardSelectedFeatures, valErrors, testErrors) = forwardSelection(trainX, trainY, testX, testY, order, util.linearSVC)
 print "\n"
 print "\n"
 print forwardSelectedFeatures
 print "\n"
 print "\n"
-print errors
+print valErrors
+print "\n"
+print "\n"
+print testErrors
 print "\n"
 print "\n"
