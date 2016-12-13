@@ -24,8 +24,8 @@ for i in range(760):
     trainY.append(Y[i])
 #print "testY:", testY
 '''
-[trainX, trainY, order] = util.createTrainData(trainYears)
-[testX, testY] = util.createTestData(testYears, order)
+[trainX, trainY, order] = util.createTrainData(trainYears, writeToFile = True)
+[testX, testY] = util.createTestData(testYears, order, writeToFile = True)
 winBoundary = 0.5
 lossBoundary = -0.5
 print "FINISHED EXTRACTING TRAINING DATA"

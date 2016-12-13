@@ -26,6 +26,7 @@ def createTrainData(years, writeToFile = False, FileName = ''):
     if writeToFile:
         xf = open('trainX' + FileName + '.txt', 'w')
         yf = open('trainY' + FileName + '.txt', 'w')
+        o = open('order.txt', 'w')
 
     order = defaultdict(list)
     length = 0
@@ -35,7 +36,6 @@ def createTrainData(years, writeToFile = False, FileName = ''):
             if key not in order:
                 order[key] = length
                 length += 1
-    
     for (av, result) in a.attributeVectorIterator(years):
         # preparing newX
         newX = [0] * length
@@ -60,6 +60,9 @@ def createTrainData(years, writeToFile = False, FileName = ''):
         Y.append(newY)
     #print len(newX)
     if writeToFile:
+        for key in order:
+            o.write(key + ' ' + order[key] + "\n")
+        o.close()
         xf.close()
         yf.close()        
     return [X, Y, order]
@@ -175,8 +178,6 @@ def NB(trainX, trainY, testX, testY, smoothing = 1):
     error = sum([1.0 * (prediction[i] != testY[i]) for i in range(len(prediction))]) / len(prediction)
     print "Naive Bayes error with smoothing =", smoothing, "is equal to:", error
     return error
-
-
 '''
 def MLP(trainX, trainY, testX, testY, layerSize, alph = 1e-5):
     clf = MLPClassifier(solver = 'lbfgs', alpha = alph, hidden_layer_sizes = layerSize, random_state = 1)
