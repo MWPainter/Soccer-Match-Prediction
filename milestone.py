@@ -76,7 +76,7 @@ def forwardSelection(origTrainX, origTrainY, testX, testY, order, trainingAlgori
             if error < bestFeatureError:
                 bestFeature = feature
                 bestFeatureError = error
-                valiationdErrors.append(error)
+                validationErrors.append(error)
         featuresSelected = featuresSelected + [bestFeature]
         remainingFeatures.remove(bestFeature)
         print str(i) + "th feature selected: " + bestFeature
