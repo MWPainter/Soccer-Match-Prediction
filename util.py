@@ -42,11 +42,6 @@ def createTrainData(years, writeToFile = False, FileName = ''):
         for key in av:
             newX[order[key]] = av[key]
 
-        print av
-        print '\n'
-        print newX
-        print '\n'
-
         # preparing newY
         if result[0] == result[1]:
             newY = 0

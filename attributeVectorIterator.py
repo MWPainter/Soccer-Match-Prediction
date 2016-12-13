@@ -2,6 +2,7 @@ from collections import defaultdict, deque
 import sqlite3
 from datetime import datetime, timedelta
 import copy
+from StringIO import StringIO
 
 
 """
@@ -51,12 +52,25 @@ class attributeVectorIterator(object):
     In the database connection we set sqlite3.Row as the row factory, to make 
     '''
     def __init__(self, years=['2012/2013','2013/2014','2014/2015'], league = 'England Premier League', databaseName = "database.sqlite"):
+
         self.databaseName = databaseName
         self.league = league
         self.currentSeason = years[0]
 
         # Setup the database connection, we only need one of these
-        self.dbConn = sqlite3.connect(databaseName)
+        #self.dbConn = sqlite3.connect(databaseName)
+        #self.dbConn.row_factory = sqlite3.Row
+        
+        tempConn = sqlite3.connect(databaseName)
+        tempfile = StringIO()
+        for line in tempConn.iterdump():
+            tempfile.write('%s\n' % line)
+        tempConn.close()
+        tempfile.seek(0)
+
+        self.dbConn = sqlite3.connect(":memory:")
+        self.dbConn.cursor().executescript(tempfile.read())
+        self.dbConn.commit()
         self.dbConn.row_factory = sqlite3.Row
 
         # Temp sql connection, used to grab some initial data
