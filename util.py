@@ -175,6 +175,8 @@ def NB(trainX, trainY, testX, testY, smoothing = 1):
     error = sum([1.0 * (prediction[i] != testY[i]) for i in range(len(prediction))]) / len(prediction)
     print "Naive Bayes error with smoothing =", smoothing, "is equal to:", error
     return error
+
+
 '''
 def MLP(trainX, trainY, testX, testY, layerSize, alph = 1e-5):
     clf = MLPClassifier(solver = 'lbfgs', alpha = alph, hidden_layer_sizes = layerSize, random_state = 1)
