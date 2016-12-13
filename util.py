@@ -176,6 +176,12 @@ def NB(trainX, trainY, testX, testY, smoothing = 1):
     print "Naive Bayes error with smoothing =", smoothing, "is equal to:", error
     return error
 
+def logisticRegression(trainX, trainY, testX, testY):
+    clf = LogisticRegression()
+    clf.fit(trainX, trainY)
+    prediction = clf.predict(testX)
+    error = sum([1.0 * (prediction[i] != testY[i]) for i in range(len(prediction))]) / len(prediction)
+    return error
 
 '''
 def MLP(trainX, trainY, testX, testY, layerSize, alph = 1e-5):

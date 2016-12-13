@@ -26,6 +26,8 @@ for i in range(760):
 '''
 [trainX, trainY, order] = util.createTrainData(trainYears)
 [testX, testY] = util.createTestData(testYears, order)
+#[trainX, trainY] = util.fetchData("train")
+#[testX, testY] = util.fetchData("test")
 winBoundary = 0.5
 lossBoundary = -0.5
 print "FINISHED EXTRACTING TRAINING DATA"
@@ -71,10 +73,7 @@ def forwardSelection(origTrainX, origTrainY, testX, testY, order, trainingAlgori
             features = featuresSelected + [feature]
             selTrainX = selectFeatures(trainX, features, order) # selTrainX for selectedFeatures of trainX
             selValX = selectFeatures(valX, features, order)
-            #print selTrainX9
             error = trainingAlgorithm(selTrainX, trainY, selValX, valY) # try this subset of features, and how well it does on validation set
-            print feature
-            print "--->" + str(error)
             if error < bestFeatureError:
                 bestFeature = feature
                 bestFeatureError = error
@@ -83,6 +82,7 @@ def forwardSelection(origTrainX, origTrainY, testX, testY, order, trainingAlgori
         remainingFeatures.remove(bestFeature)
         print ' '
         print str(i) + "th feature selected: " + bestFeature
+        print features
         print "----> error:" + str(bestFeatureError)
         print ' '
 
@@ -130,7 +130,7 @@ def selectFeatures(xs, features, order):
 
 
 
-(forwardSelectedFeatures, valErrors, testErrors) = forwardSelection(trainX, trainY, testX, testY, order, util.linearSVC, 100)
+(forwardSelectedFeatures, valErrors, testErrors) = forwardSelection(trainX, trainY, testX, testY, order, util.logisticRegression, 100)
 print "\n"
 print "\n"
 print forwardSelectedFeatures
