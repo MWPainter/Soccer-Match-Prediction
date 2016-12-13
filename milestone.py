@@ -70,7 +70,8 @@ def forwardSelection(origTrainX, origTrainY, testX, testY, order, trainingAlgori
         for feature in remainingFeatures:
             features = featuresSelected + [feature]
             selTrainX = selectFeatures(trainX, features, order) # selTrainX for selectedFeatures of trainX
-            selTestX = selectFeatures(valX, features, order)
+            selValX = selectFeatures(valX, features, order)
+            #print selTrainX9
             error = trainingAlgorithm(selTrainX, trainY, selValX, valY) # try this subset of features, and how well it does on validation set
             if error < bestFeatureError:
                 bestFeature = feature
@@ -79,7 +80,7 @@ def forwardSelection(origTrainX, origTrainY, testX, testY, order, trainingAlgori
         featuresSelected = featuresSelected + [bestFeature]
         remainingFeatures.remove(bestFeature)
         print str(i) + "th feature selected: " + bestFeature
-        print "----> error:" + bestFeatureError
+        print "----> error:" + str(bestFeatureError)
 
     # the ith subset selected by forward selection is featuresSelected[:i] (i running from 1 to numFeratures)
     # now we try each of the subsets on the algorithm, training with the whole (original) training set, and test on final test set
@@ -119,7 +120,7 @@ def selectFeatures(xs, features, order):
     for x in xs:
         newX = []
         for feature in features:
-            newX.append(order[feature])
+            newX.append(x[order[feature]])
         newXs.append(newX)
     return newXs
 

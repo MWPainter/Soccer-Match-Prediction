@@ -183,3 +183,10 @@ def MLP(trainX, trainY, testX, testY, layerSize, alph = 1e-5):
     error = sum([1.0 * (prediction[i] != testY[i]) for i in range(len(prediction))]) / len(prediction)
     print "Multi-layer perceptron error with layerSize =", layerSize, "is equal to:", error
     return error
+
+
+trainYears = [ '2011/2012', '2012/2013', '2013/2014']
+testYears = ['2014/2015']
+[trainX, trainY, order] = createTrainData(trainYears)
+[testX, testY] = createTestData(testYears, order)
+MLP(trainX, trainY, testX, testY, (5, 5))
