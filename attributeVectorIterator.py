@@ -195,19 +195,20 @@ class attributeVectorIterator(object):
         self.addTeamAttributes(attrVector, 'away', awayTeamAttributesRow)
         
         # Add in information about each player
+        """
         tempCursor = self.dbConn.cursor()
         for homeOrAway in ['home', 'away']:
             for i in range(1,12):
                 playerStr = homeOrAway + '_player_' + str(i)
                 prefix = playerStr + '_'
-                if matchRow[playerStr] == None: continue # TODO: Solve this <--- problem
+                if matchRow[playerStr] == None: continue 
                 tempCursor.execute('SELECT * FROM Player WHERE player_api_id = {0}'.format(matchRow[playerStr]))
                 playerRow = tempCursor.fetchone()
                 self.addPlayerValues(attrVector, prefix, playerRow, date)
                 tempCursor.execute('SELECT * FROM Player_Attributes WHERE player_api_id = {0} AND date < "{1}" ORDER BY date DESC'.format(matchRow[playerStr] , matchRow['date']))
                 playerAttributesRow = tempCursor.fetchone()
                 self.addPlayerAttributes(attrVector, prefix, playerAttributesRow)
-        
+        """
 
 
 
@@ -327,6 +328,7 @@ class attributeVectorIterator(object):
     Taking care to perform one hot encoding on non numeric values, and also taking care to ignore None values
     '''
     def copyRowValuesToAttrVector(self, attrVector, prefix, columns, row):
+        if row == None: return # not sure why this is happening in older years... TODO: Deal with this
         for col in columns:
             if col in row.keys():
                 if isinstance(row[col], (int, float)):

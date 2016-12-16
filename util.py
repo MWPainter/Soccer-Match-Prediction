@@ -1,12 +1,12 @@
 from sklearn import linear_model
 from sklearn import svm
 from sklearn.naive_bayes import MultinomialNB
-#from sklearn.neural_network import MLPClassifier
+from sklearn.neural_network import MLPClassifier
 from collections import defaultdict
 import attributeVectorIterator as a
 
 def fetchData(fileName):
-    xf = open(fileName + 'X' + '.txt', 'r')
+    xf = open(fileName + 'X.txt', 'r')
     X = []
     l = []
     for line in xf:
@@ -15,10 +15,21 @@ def fetchData(fileName):
         X.append(x)
     #print FileName, 'X', l
     xf.close()
-    yf = open('Y' + FileName + '.txt', 'r')
+    yf = open(fileName + 'Y.txt', 'r')
     Y = map(int, yf.readline().split())
     yf.close()
     return [X, Y]
+
+def fetchFeatureOrder(filename):
+    of = open(filename + '.txt', 'r')
+    order = {}
+    for line in of:
+        words = line.split()
+        numWords = len(words)
+        key = " ".join(words[:numWords-1])
+        value = int(words[numWords-1])
+        order[key] = value
+    return order
 
 def createTrainData(years, writeToFile = False, FileName = ''):
     X = []
@@ -61,7 +72,7 @@ def createTrainData(years, writeToFile = False, FileName = ''):
     #print len(newX)
     if writeToFile:
         for key in order:
-            o.write(key + ' ' + order[key] + "\n")
+            o.write(key + ' ' + str(order[key]) + "\n")
         o.close()
         xf.close()
         yf.close()        
@@ -110,7 +121,7 @@ def createTestData(years, order, writeToFile = False, FileName = ''):
 # final prediction
 
 # Not sure if this is an actual algorithm lol. But sounds like a good idea to me.
-def linearClassification(trainX, trainY, testX, testY, winBoundary, lossBoundary):
+def linearClassification(trainX, trainY, testX, testY, winBoundary=0.5, lossBoundary=-0.5):
     # linear classification
     reg = linear_model.LinearRegression()
 
@@ -121,7 +132,6 @@ def linearClassification(trainX, trainY, testX, testY, winBoundary, lossBoundary
     prediction = reg.predict(testX)
     # final prediction
     finalLinear = [1.0 * (x >= winBoundary) + 0 * (x < winBoundary and x >= lossBoundary) + (-1) * (x < lossBoundary) for x in prediction]
-    error = sum([1.0 * (finalLinear[i] != testY[i]) for i in range(len(finalLinear))]) / len(finalLinear)
     print "Linear classification with boundaries", lossBoundary, winBoundary, "is equal to:", error
     return error
 
@@ -151,42 +161,50 @@ def layeredSVM(trainX, trainY, testX, testY):
                 prediction.append(-1)
             else:
                 prediction.append(0)
+    #trainError = sum([1.0 * (trainPrediction[i] != trainY[i]) for i in range(len(trainPrediction))]) / len(trainPrediction)
     error = sum([1.0 * (prediction[i] != testY[i]) for i in range(len(prediction))]) / len(prediction)
-    print "Layered SVM error: ", error
-    return error
+    #print "Layered SVM error: ", error
+    return (trainError, error)
 
 def SVC(trainX, trainY, testX, testY):
     clf = svm.SVC(decision_function_shape='ovo')
     clf.fit(trainX, trainY)
+    trainPrediction = clf.predict(trainX)
+    trainError = sum([1.0 * (trainPrediction[i] != trainY[i]) for i in range(len(trainPrediction))]) / len(trainPrediction)
     prediction = clf.predict(testX)
     error = sum([1.0 * (prediction[i] != testY[i]) for i in range(len(prediction))]) / len(prediction)
-    print "Multiclass SVM error (SVC):", error
-    return error
+    #print "Multiclass SVM error (SVC):", error
+    return (trainError, error)
 
 def linearSVC(trainX, trainY, testX, testY):
     clf = svm.LinearSVC()
     clf.fit(trainX, trainY)
+    trainPrediction = clf.predict(trainX)
+    trainError = sum([1.0 * (trainPrediction[i] != trainY[i]) for i in range(len(trainPrediction))]) / len(trainPrediction)
     prediction = clf.predict(testX)
     error = sum([1.0 * (prediction[i] != testY[i]) for i in range(len(prediction))]) / len(prediction)
-    print "linear SVC error (SVC):", error
-    return error
+    #print "linear SVC error (SVC):", error
+    return (trainError, error)
 
 def NB(trainX, trainY, testX, testY, smoothing = 1):
     clf = MultinomialNB(alpha = smoothing)
     clf.fit(trainX, trainY)
+    trainPrediction = clf.predict(trainX)
+    trainError = sum([1.0 * (trainPrediction[i] != trainY[i]) for i in range(len(trainPrediction))]) / len(trainPrediction)
     prediction = clf.predict(testX)
     error = sum([1.0 * (prediction[i] != testY[i]) for i in range(len(prediction))]) / len(prediction)
-    print "Naive Bayes error with smoothing =", smoothing, "is equal to:", error
-    return error
+    #print "Naive Bayes error with smoothing =", smoothing, "is equal to:", error
+    return (trainError, error)
 
-def logisticRegression(trainX, trainY, testX, testY):
-    clf = LogisticRegression()
+def logisticRegression(trainX, trainY, testX, testY, regularisationCoeff = 1.0):
+    clf = linear_model.LogisticRegression(penalty='l2', C=regularisationCoeff, solver= 'newton-cg', multi_class='multinomial') 
     clf.fit(trainX, trainY)
+    trainPrediction = clf.predict(trainX)
+    trainError = sum([1.0 * (trainPrediction[i] != trainY[i]) for i in range(len(trainPrediction))]) / len(trainPrediction)
     prediction = clf.predict(testX)
     error = sum([1.0 * (prediction[i] != testY[i]) for i in range(len(prediction))]) / len(prediction)
-    return error
+    return (trainError, error)
 
-'''
 def MLP(trainX, trainY, testX, testY, layerSize, alph = 1e-5):
     clf = MLPClassifier(solver = 'lbfgs', alpha = alph, hidden_layer_sizes = layerSize, random_state = 1)
     clf.fit(trainX, trainY)
@@ -195,7 +213,7 @@ def MLP(trainX, trainY, testX, testY, layerSize, alph = 1e-5):
     print "Multi-layer perceptron error with layerSize =", layerSize, "is equal to:", error
     return error
 
-
+'''
 trainYears = [ '2011/2012', '2012/2013', '2013/2014']
 testYears = ['2014/2015']
 [trainX, trainY, order] = createTrainData(trainYears)
