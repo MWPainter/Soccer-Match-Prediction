@@ -8,5 +8,6 @@ https://www.kaggle.com/hugomathien/soccer
 
 Once downloaded the SQLite database should be unzipped and placed at the relative path:
 ```
-/database.sqlite
+<gitdir>/code/database.sqlite
+
 ```
